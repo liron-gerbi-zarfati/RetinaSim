@@ -1,6 +1,10 @@
 function  startdraw
 img=rgb2gray(imread('peppers.png'));
 img(:,:,2)=img;img(:,:,3)=img(:,:,1);
+arrows=imread('4arrows.png');
+background=uint8(zeros(size(img)));
+background(:,end+1:end+145,:)=arrows;
+
 %% set some parameters
 pix=30; % half of the square in pixels
 % color scale
@@ -9,36 +13,49 @@ maxColor=255;
 % when to ignore wheel (too large or too small pix)
 maxPix=56; 
 minPix=9;
+% where to put image
+x0=200;
+y0=100;
+% image size factor
+imgSize=2;
+
 %% run the experiment
-img_temp=uint8(zeros(size(img)));
+img_temp=background;%uint8(zeros(size(img)));
 firstClick=true;
 logN=1; % file number to save, 1 for log1.mat
-log=[];;
+log=[];xinit=1;yinit=1;
 labels={'time(s) from first click','action','x','y','half square'};
-actions={'1 = click','2 = drag','3 = wheel up (zoom out)','4 = wheel down (zoom in)'};
-fh= figure('units','normalized','outerposition',[0 0 1 1],'toolbar','none','MenuBar','none');
+actions={'click','drag','wheel up (zoom out)','wheel down (zoom in)','up','down','left','right','quit'};
+%fh= figure('units','normalized','outerposition',[0 0 1 1],'toolbar','none','MenuBar','none');
+fh= figure('outerposition',[x0 y0 size(background,2)*imgSize size(background,1)*imgSize],'toolbar','none','MenuBar','none');
 ha = axes('Xlim', [1 size(img,2)],'Ylim',[1 size(img,2)],'XTick',[],'YTick',[]);
 set(gca,'color','k')
 set(gcf,'color',[0.1 0.1 0.1])
 set(fh,'WindowButtonDownFcn',@Mouse_Press);
 set(fh,'WindowKeyPressFcn',@Key_Press);
-% current_key = double(get(fh,'CurrentCharacter'));
-% if current_key == 30 %UP arrow was pressed
-%        figure([0,2,0])
-% end
+image(background)
 uiwait(fh);
 
 %% callback functions
     function Key_Press(~,keyData)
         switch keyData.Key
             case 'q'
-                while exist(['log',num2str(logN),'.mat'],'file')
-                    logN=logN+1;
-                end
-                save (['log',num2str(logN)],'log','actions','labels')
-                close
-                return
+                log(end+1,:)=[toc,9,xinit,yinit,pix];
+            case 'uparrow'
+                log(end+1,:)=[toc,5,xinit,yinit,pix];
+            case 'downarrow'
+                log(end+1,:)=[toc,6,xinit,yinit,pix];
+            case 'leftarrow'
+                log(end+1,:)=[toc,7,xinit,yinit,pix];
+            case 'rightarrow'
+                log(end+1,:)=[toc,8,xinit,yinit,pix];
         end
+        while exist(['log',num2str(logN),'.mat'],'file')
+            logN=logN+1;
+        end
+        save (['log',num2str(logN)],'log','actions','labels')
+        close
+        return
     end
     function Mouse_Press(src,~)
         %set(src,'pointer','crosshair')
@@ -48,7 +65,7 @@ uiwait(fh);
         if firstClick
             tic
             firstClick=false;
-            log=[0,1,xinit,yinit,pix]; % time,action,x,y
+            log=[0,1,xinit,yinit,pix]; % time,action,x,y,pix
         else
             log(end+1,:)=[toc,1,xinit,yinit,pix];
         end
@@ -110,6 +127,6 @@ uiwait(fh);
         set(gca,'xtick',[])
         set(gca,'ytick',[])
         colormap('gray');
-        img_temp=uint8(zeros(size(img)));
+        img_temp=background;%uint8(zeros(size(img)));
     end
 end
