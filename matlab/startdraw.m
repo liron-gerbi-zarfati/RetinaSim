@@ -1,9 +1,4 @@
 function  startdraw
-img=rgb2gray(imread('peppers.png'));
-img(:,:,2)=img;img(:,:,3)=img(:,:,1);
-arrows=imread('4arrows.png');
-background=uint8(zeros(size(img)));
-background(:,end+1:end+145,:)=arrows;
 
 %% set some parameters
 pix=30; % half of the square in pixels
@@ -18,14 +13,28 @@ x0=200;
 y0=100;
 % image size factor
 imgSize=2;
-
+gray=false;
+%% load image
+if gray
+    img=rgb2gray(imread('peppers.png'));
+    img(:,:,2)=img;img(:,:,3)=img(:,:,1);
+else
+    img=imread('peppers.png');
+end
+arrows=imread('4arrows.png');
+background=uint8(zeros(size(img)));
+background(:,end+1:end+145,:)=arrows;
 %% run the experiment
-img_temp=background;%uint8(zeros(size(img)));
+img_temp=background;
 firstClick=true;
 logN=1; % file number to save, 1 for log1.mat
-log=[];xinit=1;yinit=1;
+% declare global variables to use in functions
+log=[];
+xinit=1;
+yinit=1;
+startTime='no click yet';
 labels={'time(s) from first click','action','x','y','half square'};
-actions={'click','drag','wheel up (zoom out)','wheel down (zoom in)','up','down','left','right','quit'};
+actions={'click';'drag';'wheel up (zoom out)';'wheel down (zoom in)';'up';'down';'left';'right';'quit'};
 %fh= figure('units','normalized','outerposition',[0 0 1 1],'toolbar','none','MenuBar','none');
 fh= figure('outerposition',[x0 y0 size(background,2)*imgSize size(background,1)*imgSize],'toolbar','none','MenuBar','none');
 ha = axes('Xlim', [1 size(img,2)],'Ylim',[1 size(img,2)],'XTick',[],'YTick',[]);
@@ -35,7 +44,6 @@ set(fh,'WindowButtonDownFcn',@Mouse_Press);
 set(fh,'WindowKeyPressFcn',@Key_Press);
 image(background)
 uiwait(fh);
-
 %% callback functions
     function Key_Press(~,keyData)
         switch keyData.Key
@@ -50,10 +58,10 @@ uiwait(fh);
             case 'rightarrow'
                 log(end+1,:)=[toc,8,xinit,yinit,pix];
         end
-        while exist(['log',num2str(logN),'.mat'],'file')
+        while exist(['./log',num2str(logN),'.mat'],'file')
             logN=logN+1;
         end
-        save (['log',num2str(logN)],'log','actions','labels')
+        save (['log',num2str(logN)],'log','actions','labels','startTime')
         close
         return
     end
@@ -64,6 +72,7 @@ uiwait(fh);
         yinit = round(cp(1,2));
         if firstClick
             tic
+            startTime=datestr(now);
             firstClick=false;
             log=[0,1,xinit,yinit,pix]; % time,action,x,y,pix
         else
