@@ -1,5 +1,5 @@
 function  expBlock1
-% go to experiment directory
+% go to experiment directory and list images
 pat=which('expBlock1');
 pat=pat(1:end-19)
 cd(pat);
@@ -17,18 +17,23 @@ x0=200;
 y0=100;
 % image size factor
 imgSize=2;
+% gray or color?
 gray=false;
-%% load image
+% image set depending on file name beginning
+prefix='veg';
+%% run the experiment
+% list images
+ls(
 if gray
-    img=rgb2gray(imread('peppers.png'));
+    img=rgb2gray(imread('peppers.png')); %#ok<UNRCH>
     img(:,:,2)=img;img(:,:,3)=img(:,:,1);
 else
     img=imread('peppers.png');
 end
-arrows=imread('4arrows.png');
+arrows=imread('images/4arrows.png');
 background=uint8(zeros(size(img)));
 background(:,end+1:end+145,:)=arrows;
-%% run the experiment
+
 img_temp=background;
 firstClick=true;
 logN=1; % file number to save, 1 for log1.mat
