@@ -1,9 +1,11 @@
 function experiment(imgs)
-reps=3; % how many repetitions per item
-crossSize=10; % size of cross
-jitter=[600 800]; % min max time to show cross
 angleFig=30; % degrees
 distanceFromScreen=45; % cm
+reps=3; % how many repetitions per item
+
+crossSize=10; % size of cross
+jitter=[600 800]; % min max time to show cross
+
 
 % set figure size and position
 angleFig=degtorad(angleFig);
