@@ -26,7 +26,7 @@ numStim=size(imgs,3);
 list=repmat([1:numStim],1,reps);
 [~,order]=sort(rand(size(list)));
 list=list(order);
-dur=randi(jitter,1,12)./1000;% how much time between trials, showing cross
+dur=randi(jitter,1,reps*size(imgs,3))./1000;% how much time between trials, showing cross
 log=[];
 actions={'up';'left';'down';'right';'quit'};
 
