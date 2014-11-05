@@ -1,8 +1,8 @@
-function experiment1
-loaded=load('imgs.mat')
-imgs=loaded.imgs;
-stimType=loaded.stimType;
-clear loaded
+function experiment1(imgs,stimType)
+% loaded=load('imgs.mat')
+% imgs=loaded.imgs;
+% stimType=loaded.stimType;
+% clear loaded
 angleFig=30; % degrees
 distanceFromScreen=45; % cm
 reps=2; % how many repetitions per item
@@ -65,7 +65,8 @@ set(fh,'WindowKeyPressFcn',@Key_Press);
             case 'space'
                 log(end,3)=6;
         end
-        log(end,4)=stimType(list(i),5);
+        log(end,4)=stimType(list(i),4);
+        log(end,5)=stimType(list(i),3);
         save ('log','log','actions','stimType')
         i=i+1;
         if i<(length(list)+1)
