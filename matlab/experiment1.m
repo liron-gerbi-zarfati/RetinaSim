@@ -5,7 +5,9 @@ function experiment1(imgs,stimType)
 % clear loaded
 angleFig=30; % degrees
 distanceFromScreen=45; % cm
-reps=2; % how many repetitions per item
+reps=1; % how many repetitions per item
+numTrials=300;
+
 
 crossSize=10; % size of cross
 jitter=[600 800]; % min max time to show cross
@@ -27,9 +29,12 @@ cross(floor(size(imgs,1)/2)-crossSize:ceil(size(imgs,1)/2)+crossSize,round(size(
 cross(round(size(imgs,1)/2),floor(size(imgs,2)/2)-crossSize:ceil(size(imgs,2)/2)+crossSize)=1;
 
 numStim=size(imgs,3);
-list=repmat([1:numStim],1,reps);
+list=repmat(1:numStim,1,reps);
 [~,order]=sort(rand(size(list)));
 list=list(order);
+if length(list)>numTrials
+    list=list(1:numTrials);
+end
 dur=randi(jitter,1,reps*size(imgs,3))./1000;% how much time between trials, showing cross
 log=[];
 actions={'up';'left';'down';'right';'quit'};

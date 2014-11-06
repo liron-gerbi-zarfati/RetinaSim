@@ -28,18 +28,18 @@ imageUp(edg_y+1:edg_y+2*rim+T, edg_x+1:edg_x+2*rim+T)=rim_col;
 imageUp(edg_y+rim+1:edg_y+rim+T, edg_x+rim+1:edg_x+rim+T)=square_col;
 rimInd=find(imageUp==0.25);
 mask=zeros(400,400);
-mask(rimInd)=1;
+mask(rimInd)=1; %#ok<*FNDSB>
 for chupSize=[0 8:4:20]
     t=chupSize;
     pin_y_start=edg_y+rim-t+1;
     pin_x_start=192;
     %design the pin
-    for shift=-15:15
+    for shift=-5:10
         imageUp1=imageUp;
         imageUp1(pin_y_start:pin_y_start+t, pin_x_start+shift:pin_x_start+shift+t-1)=square_col;
         
         %create the directions
-        dir1=imageUp1;%up
+        dir1=imageUp1;%#ok<*NASGU> %up
         dir2=imrotate(imageUp1,90);%left
         dir3=imrotate(imageUp1,180);%down
         dir4=imrotate(imageUp1, 270);%right
