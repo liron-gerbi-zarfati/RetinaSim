@@ -5,7 +5,7 @@ function experiment1(imgs,stimType)
 % clear loaded
 angleFig=30; % degrees
 distanceFromScreen=45; % cm
-reps=1; % how many repetitions per item
+reps=10; % how many repetitions per item
 numTrials=300;
 
 
