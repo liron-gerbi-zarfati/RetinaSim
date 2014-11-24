@@ -1,3 +1,5 @@
+function imgs=one_stimuli
+
 %ONE STIMULI WITH SPECIFIC PARAMETERS
 clc
 clear all
@@ -12,14 +14,14 @@ square_size=square_size_deg/FOV*height; %intenal square size in pixels
 
 %% Contrast parameters
 rim_col= 0.2;
-square_col= 0.5;
+square_col= 0.1;
 
 %% Bulge's parameters
 bulge_deg=0.5;                        %bulge sizes in degrees
 bulge_pix=(bulge_deg./FOV)*height;      %bulge sizes in pixels
 
 %% Resolutions parameters
-res=2.5;                                %Desired resolutions in CPD
+res=0.5;                                %Desired resolutions in CPD
 num_phos_res=res.*2*FOV;                %number of phosphenes in the whole image per resolution 
 pix_res=height./num_phos_res;           %number of pixels in one phosphene per resolution          
 
@@ -74,7 +76,8 @@ imgs=imgs_temp(:,:,ideal_image(1));
 
 %% Display
 
-imshow(imgs,[]);
+figure;imshow(imgs,[]);
+figure;imagesc(imgs);colormap('gray')
 
 
 
