@@ -1,4 +1,4 @@
-function imgs=stimulus1
+function Phosphene_Matrix=stimulus1
 %ONE STIMULUS WITH SPECIFIC PARAMETERS
 
 % screen size and angles
@@ -12,11 +12,14 @@ CM_SS = get(0,'screensize');
 
 
 angleDim='w'; % 'h' or 'w' determine the 45deg angle by window hight / width
-FOV=45;                                 %field of view in degrees
+FOV=45;
+heightDeg=10;%field of view in degrees
 if strcmp(angleDim,'h')
     distanceFromScreen=CM_SS(4)/2/tand(FOV/2);
+    heightPix=round(Pix_SS(4)*heightDeg/FOV);
 elseif strcmp(angleDim,'w')
     distanceFromScreen=CM_SS(3)/2/tand(FOV/2);
+    heightPix=round(Pix_SS(3)*heightDeg/FOV);
 else
     error('choose dimention for figure limits')
 end
@@ -26,8 +29,8 @@ end
 %figure('Units','pixels','Position',[100 100 n m])
 % set(gca,'Position',[0 0 1 1])
 %% Image's parameters (phosphene area)
-heightDeg=10;
-heightPix=round(Pix_SS(4)*heightDeg/FOV);
+
+
 %height=900;
 widthPix=heightPix;
 square_size_deg=5;                     %internal square size in degrees
@@ -48,88 +51,14 @@ pix_res=round(heightPix./num_phos_res);           % width of a phosphene in pixe
 hsize = pix_res;
 sigma = hsize^0.5;
 h = fspecial('gaussian', hsize, sigma);
+h=h-min(min(h));
+h=h./max(max(h));
 Phosphene_Matrix=repmat(h,num_phos_res,num_phos_res);
 %figure;
-
-figure('Units','pixels','Position',[100 100 length(Phosphene_Matrix) length(Phosphene_Matrix)])
+pixStartX=round(Pix_SS(3)/2-length(Phosphene_Matrix)/2);
+pixStartY=round(Pix_SS(4)/2-length(Phosphene_Matrix)/2);
+figure('Units','pixels','Position',Pix_SS,'toolbar','none','MenuBar','none')
 imagesc(Phosphene_Matrix);colormap gray 
-set(gca,'Position',[0 0 1 1])
-% %% Create the image
-% 
-% edg_x=ceil((widthPix-square_size)/2);
-% edg_y=ceil((heightPix-square_size)/2);
-% 
-% 
-% imageUp=ones(heightPix,widthPix)*rim_col;
-% imageUp(edg_y+1:edg_y+square_size, edg_x+1:edg_x+square_size)=square_col;
-% 
-% rimInd=find(imageUp==rim_col);
-% mask=zeros(heightPix,widthPix);
-% mask(rimInd)=1; 
-%     
-% bulge_xstart=floor(((widthPix-bulge_pix)/2)/pix_res)*pix_res;
-% bulge_ystart=round(edg_y-bulge_pix+1);
-
-
-% counter=1;
-% imgs_temp=[];
-% luminosity=[];
-% for shift=0:pix_res
-%     %draw the bulge
-%     imageUp1=imageUp;
-%     imageUp1(bulge_ystart:edg_y, bulge_xstart+1+shift:bulge_xstart+bulge_pix+shift)=square_col;
-%     %The filter
-%     
-%     %filter by IMFILTER function
-%     blur_im = imfilter(imageUp1,h,'replicate');
-%     %sampling of the picture
-%     sample_im=zeros(heightPix,widthPix);
-%     last_sample=widthPix-pix_res+1;
-%     for i=1:pix_res:last_sample
-%         for j=1:pix_res:last_sample
-%             sample_im(i:i+pix_res-1,j:j+pix_res-1)=blur_im(i+floor(pix_res/2),j+floor(pix_res/2));
-%         end
-%     end
-%     
-% %     for i=1:pix_res:last_sample
-% %         for j=1:pix_res:last_sample
-% %             sample_im(i:i+pix_res-1,j:j+pix_res-1)=imageUp1(i+floor(pix_res/2),j+floor(pix_res/2));
-% %         end
-% %     end
-% %     
-%     %sample_im=imageUp1;
-%     %create phosphenes
-%     
-%     if length(Phosphene_Matrix)<length(sample_im)
-%         del=round((length(sample_im)-length(Phosphene_Matrix))/2);
-%         sample_im=sample_im(del+1:end,del+1:end);
-%         del=length(sample_im)-length(Phosphene_Matrix);
-%         sample_im=sample_im(1:end-del,1:end-del);
-%         mask1=mask
-%     elseif length(Phosphene_Matrix)>length(sample_im)
-%         temp=sample_im(1)*ones(size(Phosphene_Matrix));
-%         temp1=mask(1)*ones(size(Phosphene_Matrix));
-%         del=round((length(Phosphene_Matrix)-length(sample_im))/2);
-%         temp(del+1:del+length(sample_im),del+1:del+length(sample_im))=sample_im;
-%         temp1(del+1:del+length(sample_im),del+1:del+length(sample_im))=mask;
-%         sample_im=temp;
-%         mask1=temp1;
-%     end
-%     phosphene_image=sample_im.*Phosphene_Matrix;
-%     imgs_temp(:,:,counter)=phosphene_image;
-%     luminosity(counter)=max(max(mask1.*phosphene_image))./max(max(phosphene_image));
-%     counter=counter+1;
-% end
-% ideal_image=find(luminosity==max(luminosity));
-% imgs=imgs_temp(:,:,ideal_image(1));
-% 
-% 
-% 
-% %% Display
-% 
-% figure;imshow(imgs,[]);
-% figure;imagesc(imgs);colormap('gray')
-
-
-
-
+set(gca,'Units','pixels','Position',[pixStartX pixStartY length(Phosphene_Matrix) length(Phosphene_Matrix)])
+pause
+close
