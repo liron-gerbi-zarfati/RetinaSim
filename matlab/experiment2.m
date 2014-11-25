@@ -142,7 +142,7 @@ trial(square_col,rim_col,direction,cfg);%    jitter,cross,img,
         %log(end+1,1:2)=[toc,list(i)];
         %output(
         %time1=toc;
-        output(triali,1:3)=[toc 0 direction];
+        output(triali,1:4)=[toc 0 direction square_col-rim_col];
         switch keyData.Key
             case 'uparrow'
                 output(triali,2)=1;
