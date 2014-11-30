@@ -1,6 +1,8 @@
-function output=experiment2
+function experiment2(bulge_deg)
 CPD=2.14;
-bulge_deg=0.5;
+if ~exist('bulge_deg','var')
+    bulge_deg=0.5;
+end
 rim_col= 0.5;
 square_col= 0.6;
 jitter=[600 800];
@@ -121,9 +123,10 @@ set(fh,'WindowKeyPressFcn',@Key_Press);
 triali=1;
 direction=randi([1 4],1);
 output=[];
-errors=0;
+%errors=0;
 detect=0;
-prev=true;
+prev=0; % checks if last trial was correct to detect 3 changes from error to detection
+Prev=0; % checks sequences of three good trials to make harder level
 threshold=1;
 %time0=0;
 %time1=0;
@@ -163,9 +166,9 @@ trial(square_col,rim_col,direction,cfg);%    jitter,cross,img,
         end
         %output
         save output output
-        if output(triali,2)==direction && ~prev
+        if output(triali,2)==direction && prev==0
             detect=detect+1;
-            if detect==detections
+            if detect==detections+1
                 threshold=square_col-rim_col;
                 close
                 save output output threshold
@@ -176,11 +179,16 @@ trial(square_col,rim_col,direction,cfg);%    jitter,cross,img,
         
         if triali<maxTrials
             if output(triali,2)==direction
-                rim_col=rim_col+step;
-                prev=true;
+                prev=1;
+                Prev=Prev+1; % counts three for '3 up 1 down' staircase
+                if Prev==3
+                    rim_col=rim_col+step;
+                    Prev=0;
+                end
             else
                 rim_col=rim_col-step;
-                prev=false;
+                prev=0;
+                Prev=0;
             end
             if rim_col>square_col
                 rim_col=square_col;
