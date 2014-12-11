@@ -1,5 +1,10 @@
-function thr=plotOP
-output=load('output.mat');
+function thr=plotOP(outputNum)
+if ~exist('outputNum','var')
+    outputNum='';
+else
+    outputNum=num2str(outputNum);
+end
+output=load(['output',outputNum,'.mat']);
 output=output.output;
 
 
