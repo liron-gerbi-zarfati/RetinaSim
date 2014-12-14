@@ -135,6 +135,7 @@ imagesc(cfg.cross,[0 1]);
 set(gca,'Units','pixels','Position',cfg.pos)
 set(gcf,'Color',[0 0 0]);
 set(0,'PointerLocation',[-1 -1])
+drawnow
 pause
 set(fh,'WindowKeyPressFcn',@Key_Press);
 
@@ -261,10 +262,18 @@ trial(cfg);%    jitter,cross,img,
         %disp(num2str(dur))
         imagesc(cfg.cross,[0 1]);
         drawnow
+        ticCross1=tic;
+        crossEnd=0;
+        while crossEnd<dur;
+            ticCross2=tic;
+            crossEnd=double((ticCross2-ticCross1))/1000000;
+        end   
+        
+        
         %         tic;
         %         while toc<dur
         %         end
-        pause(dur)
+        %pause(dur)
         %close;
         % make phosphenized img
         weights=cfg.weights;
