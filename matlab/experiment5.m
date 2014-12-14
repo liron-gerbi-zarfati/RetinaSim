@@ -1,4 +1,4 @@
-function experiment4(CPD,bulge_deg)
+function experiment5(CPD,bulge_deg)
 if ~exist('CPD','var')
     CPD=[];
 end
@@ -11,12 +11,15 @@ end
 if isempty(bulge_deg)
     bulge_deg=0.5;
 end
+trialLim=3; % max trial length (seconds)
+rim_col= 1/1.5; % 0.6667 background is 50% Webber contrast for 1 figure
+
 step1=0.25;% in dB
 step2=0.1;
 step=1/10.^(step1/10); % dB to ratio
 
 detections=1;
-rim_col= 0.5;
+
 square_col= 1;
 msg= true;
 jitter=[600 800];
@@ -30,10 +33,7 @@ set(0,'units','pixels')
 Pix_SS = get(0,'screensize');
 set(0,'units','centimeters')
 CM_SS = get(0,'screensize');
-pixelSize=CM_SS(3)/Pix_SS(3);
 
-%widthFig=atan(angleFig)*distanceFromScreen;  %cm
-%widthFig=round(widthFig/CM_SS(3)*Pix_SS(3)); %pix
 
 
 angleDim='w'; % 'h' or 'w' determine the 45deg angle by window hight / width
@@ -123,6 +123,7 @@ cfg.weights=squareInd+bulgeInd;
 cfg.Phosphene_Matrix=Phosphene_Matrix;
 cfg.phosInd=phosInd;
 cfg.cross=cross;
+cfg.step=step;
 if msg
     uiwait(msgbox(['Please sit ',num2str(round(distanceFromScreen)),'cm From screen']));
 end
@@ -137,7 +138,9 @@ set(0,'PointerLocation',[-1 -1])
 pause
 set(fh,'WindowKeyPressFcn',@Key_Press);
 
-
+trialBeg=0;
+trialTime=0;
+stop=false;
 triali=1;
 direction=randi([1 4],1);
 output=[];
@@ -148,7 +151,7 @@ Prev=0; % checks sequences of three good trials to make harder level
 %threshold=1;
 %time0=0;
 %time1=0;
-trial(square_col,rim_col,direction,cfg);%    jitter,cross,img,
+trial(cfg);%    jitter,cross,img,
 %    Log(triali)=output;
 %     triali=triali+1;
 %     rim_col=rim_col-0.1;
@@ -175,6 +178,7 @@ trial(square_col,rim_col,direction,cfg);%    jitter,cross,img,
                 output(triali,2)=4;
             case 'q'
                 output(triali,2)=5;
+                stop=true;
                 close all
                 save output output
                 return
@@ -190,13 +194,14 @@ trial(square_col,rim_col,direction,cfg);%    jitter,cross,img,
                 if detections==1 % first error
                     detections=3;
                     prev=2; % needs only one good trial next time (1 up 1 down only this time)
-                    Prev=0;
+                    Prev=0; 
                     detect=1; % start counting 3 errors from now
                     step=1/10.^(step2/10);
                 else
                     %threshold=square_col-rim_col;
                     close all
                     save output output
+                    stop=true;
                     return
                 end
             end
@@ -224,9 +229,11 @@ trial(square_col,rim_col,direction,cfg);%    jitter,cross,img,
             direction=randi([1 4],1);
             
             triali=triali+1;
-            trial(square_col,rim_col,direction,cfg);
+            %timeOK=true; % to allow while loop to check trial time
+            trial(cfg);
         else
             disp('end')
+            stop=true;
             close all
             return
         end
@@ -247,11 +254,13 @@ trial(square_col,rim_col,direction,cfg);%    jitter,cross,img,
 %         end
 
 
-    function trial(square_col,rim_col,direction,cfg)
+    function trial(cfg)
+        
         %output(triali,1:3)=[0 0 direction];
         dur=randi(cfg.jitter,1)./1000;
         %disp(num2str(dur))
         imagesc(cfg.cross,[0 1]);
+        drawnow
         %         tic;
         %         while toc<dur
         %         end
@@ -267,7 +276,38 @@ trial(square_col,rim_col,direction,cfg);%    jitter,cross,img,
         % img faces right
         img=imrotate(img,90*direction);
         imagesc(img,[0 1]);
+        drawnow
         tic;
+        trialBeg=tic;
+        trialTime=0;
+        pause(trialLim)
+%         
+%         while timeOK; %trialTime<trialLim
+            ticTemp=tic;
+            trialTime=double((ticTemp-trialBeg))/1000000;
+%             if trialTime>=trialLim
+%                 timeOK=false;
+%             end
+%         end
+%         disp('ok')
+%         close
+%         return
+        if trialTime>=trialLim && stop==false
+            output(triali,1:4)=[trialLim 0 direction square_col-rim_col];
+            save output output
+            rim_col=rim_col*step;
+            prev=0;
+            Prev=0;
+            if rim_col>square_col
+                rim_col=square_col;
+            elseif rim_col<0
+                rim_col=0;
+            end
+            direction=randi([1 4],1);
+            
+            triali=triali+1;
+            trial(cfg);
+        end
         %pause
     end
 end
