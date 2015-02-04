@@ -3,14 +3,15 @@ if ~exist('CPD','var')
     CPD=[];
 end
 if isempty(CPD)
-    CPD=1;
+    CPD=2;
 end
-
+grayColors=4; % how many shades of gray
+msg=1;
 %% make phosphene matrix
 set(0,'units','pixels')
 Pix_SS = get(0,'screensize');
-%set(0,'units','centimeters')
-%CM_SS = get(0,'screensize');
+set(0,'units','centimeters')
+CM_SS = get(0,'screensize');
 
 
 
@@ -19,15 +20,17 @@ FOV=45;
 heightDeg=10;%field of view in degrees
 % compute the aray hight(=width) of phosphenes in pixels
 if strcmp(angleDim,'h')
-%     distanceFromScreen=CM_SS(4)/2/tand(FOV/2);
+    distanceFromScreen=CM_SS(4)/2/tand(FOV/2);
     heightPix=round(Pix_SS(4)*heightDeg/FOV);
 elseif strcmp(angleDim,'w')
-%     distanceFromScreen=CM_SS(3)/2/tand(FOV/2);
+    distanceFromScreen=CM_SS(3)/2/tand(FOV/2);
     heightPix=round(Pix_SS(3)*heightDeg/FOV);
 else
     error('choose dimention for figure limits')
 end
-
+if msg
+    uiwait(msgbox(['Please sit ',num2str(round(distanceFromScreen)),'cm From screen']));
+end
 %% Resolutions parameters
 res=CPD;                                        %Desired resolutions in CPD (2.14 CPD is 42.88*42.88 phosphenes. we want CPD 1.25, 2.5 10)
 num_phos_res=round(res.*2*heightDeg);                %number of phosphenes in the whole image per resolution
@@ -39,7 +42,7 @@ h=h./max(max(h));
 Phosphene_Matrix=repmat(h,num_phos_res,num_phos_res);
 
 %% make shape
-txt=rgb2gray(imread('/home/yuval/Dropbox/MEG/alice/paragraphs/seg1.bmp'));
+txt=rgb2gray(imread('~/RetinaSim/images/alice100.png'));
 phosInd=zeros(size(Phosphene_Matrix));
 ind=0;
 for i=1:num_phos_res
@@ -54,9 +57,9 @@ for i=1:num_phos_res
 end
 
 %% make first image and run experiment
-imgSize=1; % scale image size
+
 minColor=0; % color limits
-maxColor=200;
+maxColor=1;
 
 x0=720;
 y0=90;
@@ -67,21 +70,69 @@ firstClick=true;
 LogN=1; % file number to save, 1 for Log1.mat
 % declare global variables to use in functions
 Log=[];
-xinit=1;
+
+
+matSamples=find(phosInd==1);
+for phosi=2:phosInd(end)
+    matSamples(:,phosi)=find(phosInd==phosi); % every column has the indices of one gausian in the real image
+end
+
+%% resample picture
+xinit=Pix_SS(3);
 yinit=1;
+if xinit-pix<1
+    xinit=pix+1;
+end
+if yinit-pix<1
+    yinit=pix+1;
+end
+if xinit+pix>size(background,2)
+    xinit=size(background,2)-pix;
+end
+if yinit+pix>size(background,1)
+    yinit=size(background,1)-pix;
+end
+matData=txt(yinit-pix:yinit+pix-1,xinit-pix:xinit+pix-1);
+resampVec=mean(matData(matSamples));
+resampVec1=zeros(size(resampVec));
+limits=min(resampVec):(max(resampVec)-min(resampVec))/grayColors: max(resampVec);
+for i=1:grayColors
+    greater=resampVec>=limits(i);
+    smaller=resampVec<=limits(i+1);
+    category=greater+smaller>1;
+    resampVec1(category)=(i-1)/(grayColors-1); % for 4 colors you get [0 0.333 0.667 1]
+end
+resampSquare=zeros(size(matData));
+resampSquare(1:end)=resampVec1(phosInd);
+img_temp(yinit-pix:yinit+pix-1,xinit-pix:xinit+pix-1)=resampSquare.*Phosphene_Matrix;
+
+%% display first image and start experiment
 startTime='no click yet';
 labels={'time(s) from first click','action','x','y','half square'};
 actions={'click';'drag';'wheel up (zoom out)';'wheel down (zoom in)';'up';'down';'left';'right';'quit'};
 %fh= figure('units','normalized','outerposition',[0 0 1 1],'toolbar','none','MenuBar','none');
-fh= figure('outerposition',[x0 y0 size(background,2)*imgSize size(background,1)*imgSize],'toolbar','none','MenuBar','none');
-ha = axes('Xlim', [1 size(background,2)],'Ylim',[1 size(background,2)],'XTick',[],'YTick',[]);
+%fh= figure('outerposition',[x0 y0 size(background,2)*imgSize size(background,1)*imgSize],'toolbar','none','MenuBar','none');
+fh=figure('Units','pixels','Position',Pix_SS,'toolbar','none','MenuBar','none');
+%ha = axes('Xlim', [1 size(background,2)],'Ylim',[1 size(background,2)],'XTick',[],'YTick',[]);
+ha = axes('XTick',[],'YTick',[]);
+pixStartX=round(Pix_SS(3)/2-size(background,2)/2);
+pixStartY=round(Pix_SS(4)/2-size(background,1)/2);
+set(gca,'Units','pixels','Position',[pixStartX pixStartY size(background,2) size(background,1)])
+set(gcf,'Color',[0 0 0]);
 set(gca,'color','k')
-set(gcf,'color',[0.1 0.1 0.1])
+%set(gcf,'color',[0.1 0.1 0.1])
 set(fh,'WindowButtonDownFcn',@Mouse_Press);
 set(fh,'WindowKeyPressFcn',@Key_Press);
 %image(background)
+
+
 imagesc(img_temp,[minColor maxColor])
-colormap gray
+%image(img_temp)
+% axis off
+set(gca,'xtick',[])
+set(gca,'ytick',[])
+colormap('gray');
+img_temp=background;
 uiwait(fh);
 %% callback functions
     function Key_Press(~,keyData)
@@ -168,7 +219,19 @@ uiwait(fh);
         if yinit+pix>size(background,1)
             yinit=size(background,1)-pix;
         end
-        img_temp(yinit-pix:yinit+pix,xinit-pix:xinit+pix)=txt(yinit-pix:yinit+pix,xinit-pix:xinit+pix);
+        matData=txt(yinit-pix:yinit+pix-1,xinit-pix:xinit+pix-1);
+        resampVec=mean(matData(matSamples));
+        resampVec1=zeros(size(resampVec));
+        limits=min(resampVec):(max(resampVec)-min(resampVec))/grayColors: max(resampVec);
+        for i=1:grayColors
+            greater=resampVec>=limits(i);
+            smaller=resampVec<=limits(i+1);
+            category=greater+smaller>1;
+            resampVec1(category)=(i-1)/(grayColors-1); % for 4 colors you get [0 0.333 0.667 1]
+        end
+        resampSquare=zeros(size(matData));
+        resampSquare(1:end)=resampVec1(phosInd);
+        img_temp(yinit-pix:yinit+pix-1,xinit-pix:xinit+pix-1)=resampSquare.*Phosphene_Matrix;
         imagesc(img_temp,[minColor maxColor])
         %image(img_temp)
         % axis off
