@@ -1,6 +1,6 @@
 
 experiment5(0.6,1)
-
+thr1=plotOP;
 experiment5(0.6,6)
 
 experiment5(0.6,10)
