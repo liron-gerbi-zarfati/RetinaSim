@@ -11,7 +11,7 @@ end
 if isempty(bulge_deg)
     bulge_deg=0.5;
 end
-trialLim=3; % max trial length (seconds)
+trialLim=5; % max trial length (seconds)
 rim_col= 1/1.5; % 0.6667 background is 50% Webber contrast for 1 figure
 
 step1=0.25;% in dB
