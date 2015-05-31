@@ -37,3 +37,22 @@ experiment6(5/3,10)
 copyfile('output.mat','output9.mat')
 thr9=plotOP(9,false);
 toc
+
+thr=[thr1,thr2,thr3;thr4,thr5,thr6;thr7,thr8,thr9];
+save thr thr
+
+
+Thr=thr./(1-thr);
+figure;
+semilogx([0.6,1,5/3],Thr,'^','linewidth',5)
+hold on
+semilogx([0.6,1,5/3],Thr,'linewidth',2)
+xlim([0.5 2])
+ylim([0 0.6])
+legend('small','medium','large')
+set(gca,'Xtick',[0.6 1 5/3])
+xlabel('CPD')
+ylabel('Webber contrast (I-Ib)/Ib')
+
+
+for 
