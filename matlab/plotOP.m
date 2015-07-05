@@ -18,7 +18,9 @@ Err=find(output(:,2)~=output(:,3));
 Err=Err(2:end);
 Err=Err([1;1+find(diff(Err)>3)]);
 if length(Err)==1
-    error('not even one level completed successfuly')
+    warning([outputNum,': not even one level after 1st error completed successfuly'])
+    Err=find(output(:,2)~=output(:,3));
+    Err=Err(2:end);
 end
 for erri=2:length(Err)
     [~,goodi]=max(output(Err(erri-1):Err(erri),4));

@@ -36,10 +36,18 @@ thr2=plotOP(2,false);
 experiment6(0.6,1)
 copyfile('output.mat','output1.mat')
 thr1=plotOP(1,false);
-
+%% YUVAL DOES THIS PART
 thr=[thr1,thr2,thr3;thr4,thr5,thr6;thr7,thr8,thr9];
 ver='ver2';
 save thr thr ver
+DIR=input('subject name?','s');
+if ~exist(['./results/',DIR],'dir')
+    mkdir(['./results/',DIR])
+    unix(['mv output*.mat ','./results/',DIR,'/']);
+    unix(['mv thr.mat ','./results/',DIR,'/']);
+else
+    error('folder exists!')
+end
 
 
 % Thr=thr./(1-thr);
